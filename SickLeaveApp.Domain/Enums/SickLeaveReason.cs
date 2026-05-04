@@ -1,19 +1,21 @@
-﻿namespace SickLeaveApp.Domain.Enums;
+﻿using System.ComponentModel;
+
+namespace SickLeaveApp.Domain.Enums;
 
 public enum SickLeaveReason
 {
-    // Заболевание
+    [Description("01 - Заболевание")]
     Illness = 1,
         
-    // Травма 
+    [Description("02 - Травма")]
     Injury = 2,
         
-    // Карантин 
+    [Description("03 - Карантин")]
     Quarantine = 3,
         
-    // Уход за больным членом семьи 
-    CareForSickFamilyMember = 9,
+    [Description("05 - Беременность и роды")]
+    Maternity = 5,
         
-    // Отпуск по беременности и родам
-    Maternity = 5
+    [Description("09 - Уход за больным членом семьи")]
+    CareForSickFamilyMember = 9
 }

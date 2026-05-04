@@ -1,5 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
+using System.ComponentModel;
+using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SickLeaveApp.Domain.Enums;
@@ -35,8 +37,21 @@ namespace SickLeaveApp.UI.ViewModels
         [ObservableProperty] private DateTime _startDate = DateTime.Today.AddDays(-10);
         [ObservableProperty] private DateTime _endDate = DateTime.Today;
         [ObservableProperty] private SickLeaveReason _selectedReason = SickLeaveReason.Illness;
+        
+        private static string GetEnumDescription(Enum value)
+        {
+            FieldInfo fi = value.GetType().GetField(value.ToString());
+            DescriptionAttribute[] attributes = (DescriptionAttribute[])fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
+            return attributes.Length > 0 ? attributes[0].Description : value.ToString();
+        }
 
-        public Array Reasons => Enum.GetValues(typeof(SickLeaveReason));
+        public List<ReasonOption> Reasons => Enum.GetValues(typeof(SickLeaveReason))
+            .Cast<SickLeaveReason>()
+            .Select(r => new ReasonOption 
+            { 
+                Value = r, 
+                Description = GetEnumDescription(r) 
+            }).ToList();
 
         public ObservableCollection<IncomeItem> Incomes { get; set; } = new();
 
@@ -114,6 +129,12 @@ namespace SickLeaveApp.UI.ViewModels
                     MessageBoxImage.Information);
             }
         }
+    }
+    
+    public class ReasonOption
+    {
+        public SickLeaveReason Value { get; set; }
+        public string Description { get; set; }
     }
 
     public class IncomeItem
