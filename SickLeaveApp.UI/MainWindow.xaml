@@ -1,12 +1,122 @@
 ﻿<Window x:Class="SickLeaveApp.UI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SickLeaveApp.UI"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="Мой Больничный" Height="750" Width="1000"
+        Background="{StaticResource BackgroundBrush}"
+        FontFamily="Segoe UI" WindowStartupLocation="CenterScreen">
 
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <Border Grid.Row="0" Background="{StaticResource PrimaryBrush}" Padding="30,0">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Мой Больничный" Foreground="White" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                <Rectangle Width="1" Height="25" Fill="White" Margin="20,0" Opacity="0.3"/>
+                <TextBlock Text="Расчёт пособий по нетрудоспособности" Foreground="White" FontSize="16" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+        
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="30">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                    
+                    <GroupBox>
+                        <GroupBox.Header>
+                            <TextBlock Text="Данные сотрудника" FontSize="18" FontWeight="Bold" Foreground="#1F2937"/>
+                        </GroupBox.Header>
+                        <StackPanel>
+                            <TextBlock Text="Фамилия, Имя, Отчество" Foreground="#6B7280" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                    <TextBlock Text="СНИЛС" Foreground="#6B7280"/>
+                                    <TextBox Text="{Binding Snils, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Стаж (лет)" Foreground="#6B7280"/>
+                                    <TextBox Text="{Binding ExperienceYears, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox>
+                        <GroupBox.Header>
+                            <TextBlock Text="Период и причина" FontSize="18" FontWeight="Bold" Foreground="#1F2937"/>
+                        </GroupBox.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="Начало" Foreground="#6B7280"/>
+                                <DatePicker SelectedDate="{Binding StartDate}" Margin="0,5,0,0"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                <TextBlock Text="Окончание" Foreground="#6B7280"/>
+                                <DatePicker SelectedDate="{Binding EndDate}" Margin="0,5,0,0"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Причина" Foreground="#6B7280"/>
+                                <ComboBox ItemsSource="{Binding Reasons}" SelectedItem="{Binding SelectedReason}" Margin="0,5,0,0" Height="40"/>
+                            </StackPanel>
+                        </Grid>
+                    </GroupBox>
+
+                    <GroupBox>
+                        <GroupBox.Header>
+                            <TextBlock Text="Сведения о доходах" FontSize="18" FontWeight="Bold" Foreground="#1F2937"/>
+                        </GroupBox.Header>
+                        <DataGrid ItemsSource="{Binding Incomes}" AutoGenerateColumns="False" 
+                                  HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Год" Binding="{Binding Year}" Width="80"/>
+                                <DataGridTextColumn Header="Сумма дохода за год (₽)" Binding="{Binding Amount}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1">
+                    <Button Content="Рассчитать выплаты" Command="{Binding CalculateCommand}" Height="55" FontSize="16" Margin="0,0,0,20"/>
+
+                    <GroupBox Background="#EBF5FF" Visibility="{Binding Result, Converter={StaticResource NullToVisibilityConverter}}">
+                        <GroupBox.Header>
+                            <TextBlock Text="Итоги расчёта" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}"/>
+                        </GroupBox.Header>
+                        <StackPanel>
+                            <TextBlock Text="ИТОГО К ВЫПЛАТЕ" Foreground="#6B7280" FontSize="12"/>
+                            <TextBlock Text="{Binding Result.TotalAmount, StringFormat='{}{0:N2} ₽'}" FontSize="28" FontWeight="Bold" Foreground="#111827" Margin="0,0,0,20"/>
+
+                            <Separator Background="#D1D5DB" Margin="0,0,0,15"/>
+
+                            <TextBlock Text="За счёт работодателя (3 дня)" Foreground="#6B7280"/>
+                            <TextBlock Text="{Binding Result.EmployerAmount, StringFormat='{}{0:N2} ₽'}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                            <TextBlock Text="За счёт СФР" Foreground="#6B7280"/>
+                            <TextBlock Text="{Binding Result.SfrAmount, StringFormat='{}{0:N2} ₽'}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,20"/>
+
+                            <Button Content="Скачать PDF-отчёт" Background="White" Foreground="{StaticResource PrimaryBrush}" BorderThickness="1" BorderBrush="{StaticResource PrimaryBrush}" Margin="0,0,0,10"/>
+                            <Button Content="Экспорт XML для СФР" Background="Transparent" Foreground="#6B7280" FontSize="12"/>
+                        </StackPanel>
+                    </GroupBox>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </Window>
