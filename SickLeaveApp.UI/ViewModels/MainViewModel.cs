@@ -16,13 +16,14 @@ namespace SickLeaveApp.UI.ViewModels
         private readonly SickLeaveCalculatorService _calculator;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly AppDbContext _dbContext;
-        
-        public MainViewModel(SickLeaveCalculatorService calculator, IEmployeeRepository employeeRepository, AppDbContext dbContext)
+
+        public MainViewModel(SickLeaveCalculatorService calculator, IEmployeeRepository employeeRepository,
+            AppDbContext dbContext)
         {
             _calculator = calculator;
             _employeeRepository = employeeRepository;
             _dbContext = dbContext;
-            
+
             // Incomes.Add(new IncomeItem { Year = DateTime.Now.Year - 2, Amount = 0 });
             // Incomes.Add(new IncomeItem { Year = DateTime.Now.Year - 1, Amount = 0 });
         }
@@ -39,18 +40,20 @@ namespace SickLeaveApp.UI.ViewModels
 
         public ObservableCollection<IncomeItem> Incomes { get; set; } = new();
 
-        [ObservableProperty] private CalculationsResult _result;[RelayCommand]
+        [ObservableProperty] private CalculationsResult _result;
+
+        [RelayCommand]
         private void Calculate()
         {
             try
             {
                 var employee = new Employee(_fullName, _snils, _experienceYears, 0);
                 var sickLeave = new SickLeavePeriod(employee.Id, _startDate, _endDate, _selectedReason);
-                
+
                 var incomeRecords = Incomes.Select(i => new IncomeRecord(employee.Id, i.Year, i.Amount)).ToList();
-                
+
                 Result = _calculator.Calculate(employee, sickLeave, incomeRecords);
-                
+
                 _employeeRepository.Add(employee);
                 _dbContext.SickLeavePeriods.Add(sickLeave);
                 _dbContext.IncomeRecords.AddRange(incomeRecords);
@@ -60,7 +63,55 @@ namespace SickLeaveApp.UI.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Ошибка ввода, проверьте правильность введеных данных!", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, "Ошибка ввода, проверьте правильность введеных данных!",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        
+        [RelayCommand]
+        private void ExportPdf()
+        {
+            if (Result == null) return;
+
+            var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "PDF files (*.pdf)|*.pdf",
+                FileName = $"Расчет_{FullName}_{DateTime.Now:yyyyMMdd}"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                var exportService = new SickLeaveApp.Infrastructure.Services.ExportService();
+
+                // Создаем временные объекты для экспорта на основе введенных полей
+                var emp = new Employee(_fullName, _snils, _experienceYears, 0);
+                var sickLeave = new SickLeavePeriod(emp.Id, _startDate, _endDate, _selectedReason);
+
+                exportService.ExportToPdf(saveFileDialog.FileName, emp, sickLeave, Result);
+                MessageBox.Show("PDF-отчет успешно сохранен!", "Экспорт", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        [RelayCommand]
+        void ExportXml()
+        {
+            if (Result == null) return;
+
+            var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "XML files (*.xml)|*.xml",
+                FileName = $"SFR_Export_{_snils}"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                var exportService = new SickLeaveApp.Infrastructure.Services.ExportService();
+                var emp = new Employee(_fullName, _snils, _experienceYears, 0);
+                var sickLeave = new SickLeavePeriod(emp.Id, _startDate, _endDate, _selectedReason);
+
+                exportService.ExportToXml(saveFileDialog.FileName, emp, sickLeave, Result);
+                MessageBox.Show("XML-файл для СФР сформирован!", "Экспорт", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
         }
     }
@@ -70,4 +121,5 @@ namespace SickLeaveApp.UI.ViewModels
         public int Year { get; set; }
         public decimal Amount { get; set; }
     }
+    
 }

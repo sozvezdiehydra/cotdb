@@ -111,8 +111,8 @@
                             <TextBlock Text="За счёт СФР" Foreground="#6B7280"/>
                             <TextBlock Text="{Binding Result.SfrAmount, StringFormat='{}{0:N2} ₽'}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,20"/>
 
-                            <Button Content="Скачать PDF-отчёт" Background="White" Foreground="{StaticResource PrimaryBrush}" BorderThickness="1" BorderBrush="{StaticResource PrimaryBrush}" Margin="0,0,0,10"/>
-                            <Button Content="Экспорт XML для СФР" Background="Transparent" Foreground="#6B7280" FontSize="12"/>
+                            <Button Content="Скачать PDF-отчёт" Background="White" Foreground="{StaticResource PrimaryBrush}" BorderThickness="1" BorderBrush="{StaticResource PrimaryBrush}" Margin="0,0,0,10" Command="{Binding ExportPdfCommand}" />
+                            <Button Content="Экспорт XML для СФР" Background="Transparent" Foreground="#6B7280" FontSize="12" Command="{Binding ExportXmlCommand}"/>
                         </StackPanel>
                     </GroupBox>
                 </StackPanel>
